@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Security Headers via CSP & Meta -->
+    <meta http-equiv="Content-Security-Policy" 
+          content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self';">
+    <meta http-equiv="X-Frame-Options" content="DENY">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+
+    <title>KAPU BAABKUBWA | Select Fresh Produce & Groceries</title>
+
+    <style>
+        :root {
+            --primary-color: #1e5a27;
+            --secondary-color: #f26522;
+            --dark-color: #1f2421;
+            --light-color: #f8f9fa;
+            --gray-bg: #e0e0e0;
+            --error-color: #d9534f;
+            --success-color: #28a745;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--light-color);
+            color: var(--dark-color);
+            line-height: 1.6;
+        }
+
+        /* Header with Clear Image Background (Green Overlay Removed) */
+        header {
+            background: linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.45)), 
+                        url('images/kapu-hero.jpg') center/cover no-repeat;
+            color: white;
+            padding: 4rem 1rem;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        }
+
+        header h1 {
+            font-size: 2.6rem;
+            letter-spacing: 1.5px;
+            font-weight: 800;
+            text-shadow: 0 2px 6px rgba(0,0,0,0.7);
+        }
+
+        header p {
+            font-size: 1.15rem;
+            opacity: 0.95;
+            font-weight: 600;
+            text-shadow: 0 2px 5px rgba(0,0,0,0.7);
+            margin-top: 0.3rem;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 1.5rem;
+        }
+
+        /* Category Filter Buttons */
+        .filter-container {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+            margin-bottom: 1.5rem;
+        }
+
+        .filter-btn {
+            background: #fff;
+            border: 1px solid #ccc;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            white-space: nowrap;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .filter-btn.active, .filter-btn:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Product Grid Layout */
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .product-card {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .product-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+        }
+
+        .product-img {
+            width: 100%;
+            height: 160px;
+            object-fit: cover;
+            background-color: var(--gray-bg);
+        }
+
+        .product-info {
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+
+        .product-title {
+            font-size: 1rem;
+            font-weight: bold;
+            margin-bottom: 0.3rem;
+        }
+
+        .product-unit {
+            font-size: 0.85rem;
+            color: #666;
+            margin-bottom: 0.8rem;
+        }
+
+        .select-btn {
+            margin-top: auto;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.6rem;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .select-btn.selected {
+            background-color: var(--secondary-color);
+        }
+
+        /* Skeleton Loading Animation */
+        .skeleton {
+            animation: skeleton-loading 1.2s infinite linear alternate;
+        }
+
+        @keyframes skeleton-loading {
+            0% {
+                background-color: #e0e0e0;
+            }
+            100% {
+                background-color: #f0f0f0;
+            }
+        }
+
+        .skeleton-text {
+            height: 14px;
+            margin-bottom: 8px;
+            border-radius: 4px;
+        }
+
+        .skeleton-text.short {
+            width: 60%;
+        }
+
+        .skeleton-btn {
+            height: 36px;
+            margin-top: auto;
+            border-radius: 4px;
+        }
+
+        /* Order Basket & Form */
+        .checkout-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        .selected-list {
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background: #f9f9f9;
+            border: 1px dashed #ccc;
+            border-radius: 4px;
+            min-height: 50px;
+        }
+
+        .badge {
+            display: inline-block;
+            background: var(--primary-color);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            margin: 4px;
+        }
+
+        .badge .remove-item {
+            margin-left: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .form-group {
+            margin-bottom: 1.2rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.4rem;
+            font-weight: 600;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        .submit-btn {
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        #feedback-message {
+            margin-top: 1rem;
+            padding: 0.75rem;
+            border-radius: 4px;
+            display: none;
+        }
+
+        .msg-error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .msg-success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+
+        footer {
+            text-align: center;
+            padding: 1.5rem;
+            margin-top: 2rem;
+            background: var(--dark-color);
+            color: white;
+            font-size: 0.9rem;
+        }
+
+        .support-toggle {
+            position: fixed;
+            right: 22px;
+            bottom: 22px;
+            z-index: 20;
+            display: inline-flex;
+            align-items: center;
+            gap: 9px;
+            min-height: 52px;
+            padding: 0 18px;
+            border: 0;
+            border-radius: 28px;
+            background: #1e5a27;
+            color: #fff;
+            font-size: 0.98rem;
+            font-weight: 700;
+            box-shadow: 0 5px 18px rgba(31, 36, 33, 0.25);
+            cursor: pointer;
+        }
+
+        .support-toggle span {
+            display: grid;
+            width: 25px;
+            height: 25px;
+            place-items: center;
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
+        }
+
+        .support-panel {
+            position: fixed;
+            right: 22px;
+            bottom: 86px;
+            z-index: 20;
+            display: flex;
+            width: min(370px, calc(100vw - 28px));
+            max-height: min(570px, calc(100vh - 112px));
+            flex-direction: column;
+            overflow: hidden;
+            border: 1px solid #d7ded7;
+            border-radius: 8px;
+            background: #fff;
+            box-shadow: 0 12px 36px rgba(31, 36, 33, 0.22);
+        }
+
+        .support-panel[hidden] { display: none; }
+
+        .support-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            padding: 16px 18px;
+            background: var(--primary-color);
+            color: #fff;
+        }
+
+        .support-header h2 { font-size: 1.05rem; }
+        .support-header p { margin-top: 2px; font-size: 0.84rem; opacity: 0.9; }
+
+        .support-close {
+            width: 32px;
+            height: 32px;
+            border: 0;
+            background: transparent;
+            color: #fff;
+            font-size: 1.6rem;
+            line-height: 1;
+            cursor: pointer;
+        }
+
+        .support-messages {
+            display: flex;
+            min-height: 120px;
+            flex: 1;
+            flex-direction: column;
+            gap: 9px;
+            overflow-y: auto;
+            padding: 16px;
+        }
+
+        .support-message {
+            max-width: 90%;
+            padding: 10px 12px;
+            border-radius: 8px;
+            font-size: 0.92rem;
+            overflow-wrap: anywhere;
+        }
+
+        .support-message-assistant { align-self: flex-start; background: #f0f4ef; }
+        .support-message-customer { align-self: flex-end; background: #e5f2e7; }
+
+        .support-quick-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 7px;
+            padding: 0 14px 12px;
+        }
+
+        .support-quick-actions button {
+            padding: 7px 10px;
+            border: 1px solid #cbd8cb;
+            border-radius: 16px;
+            background: #fff;
+            color: #254c2b;
+            font-size: 0.82rem;
+            cursor: pointer;
+        }
+
+        .support-form {
+            display: flex;
+            gap: 8px;
+            padding: 12px 14px;
+            border-top: 1px solid #e3e8e3;
+        }
+
+        .support-form input { min-width: 0; padding: 9px 10px; }
+
+        .support-form button {
+            padding: 0 14px;
+            border: 0;
+            border-radius: 4px;
+            background: var(--primary-color);
+            color: #fff;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .support-whatsapp {
+            display: block;
+            padding: 11px 14px;
+            background: #25D366;
+            color: #10371f;
+            text-align: center;
+            text-decoration: none;
+            font-weight: 700;
+        }
+
+        .visually-hidden {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        @media (max-width: 480px) {
+            .support-toggle { right: 14px; bottom: 14px; }
+            .support-panel { right: 14px; bottom: 76px; max-height: calc(100vh - 92px); }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>KAPU BAABKUBWA</h1>
+        <p>E-GROCERY</p>
+    </header>
+
+    <div class="container">
+        <!-- Filter Controls -->
+        <div class="filter-container">
+            <button class="filter-btn active" data-category="all">All Items</button>
+            <button class="filter-btn" data-category="grains">Maize & Flour</button>
+            <button class="filter-btn" data-category="pantry">Sugar, Salt & Paste</button>
+            <button class="filter-btn" data-category="produce">Fresh Produce</button>
+            <button class="filter-btn" data-category="beverages">Beverages & Oil</button>
+        </div>
+
+        <!-- Dynamic Product Grid -->
+        <div id="productGrid" class="product-grid">
+            <!-- Skeleton Loader Templates rendered dynamically initially -->
+        </div>
+
+        <!-- Checkout Form with Selected Products -->
+        <section class="checkout-section">
+            <h2>Your Selected Kikapu Items</h2>
+            <div id="selectedBasket" class="selected-list">
+                <span style="color: #888;">No products selected yet. Click "+ Add to Kikapu" on any product above.</span>
+            </div>
+
+            <form id="orderForm" novalidate>
+                <input type="hidden" id="csrfToken" name="csrfToken" value="SECURE_DYNAMIC_TOKEN_PLACEHOLDER">
+
+                <div class="form-group">
+                    <label for="fullName">Full Name</label>
+                    <input type="text" id="fullName" name="fullName" required maxlength="100">
+                </div>
+
+                <div class="form-group">
+                    <label for="phone">Phone Number (Tanzania)</label>
+                    <input type="tel" id="phone" name="phone" placeholder="e.g. 0679412400" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="address">Delivery Address & Special Instructions</label>
+                    <textarea id="address" name="address" rows="3" maxlength="300" required placeholder="Specify your neighborhood, street, or drop-off location..."></textarea>
+                </div>
+
+                <button type="submit" class="submit-btn">Place Order (Call/WhatsApp 0679 412 400)</button>
+            </form>
+
+            <div id="feedback-message"></div>
+        </section>
+    </div>
+
+    <footer>
+        <p>100% FRESHNESS GUARANTEE — Delivered in 30 minutes or less.</p>
+        <p style="color: #25D366; font-weight: bold; margin-top: 0.3rem;">Call or WhatsApp: <a href="https://wa.me/255679412400" target="_blank" rel="noopener noreferrer" style="color: inherit;">0679 412 400</a> | Tanzania</p>
+    </footer>
+
+    <button id="supportToggle" class="support-toggle" type="button" aria-expanded="false" aria-controls="supportPanel" aria-label="Open Kapu customer support">
+        <span aria-hidden="true">?</span> Need help?
+    </button>
+    <section id="supportPanel" class="support-panel" aria-labelledby="supportTitle" hidden>
+        <header class="support-header">
+            <div>
+                <h2 id="supportTitle">Kapu customer care</h2>
+                <p>Here to make your shopping easier</p>
+            </div>
+            <button id="supportClose" class="support-close" type="button" aria-label="Close customer support">×</button>
+        </header>
+        <div id="supportMessages" class="support-messages" aria-live="polite" aria-relevant="additions text">
+            <p class="support-message support-message-assistant">Hello! I’m here to help with your order, delivery, or fresh produce. What can I help you with?</p>
+        </div>
+        <div class="support-quick-actions" aria-label="Common questions">
+            <button type="button" data-question="How do I place an order?">How to order</button>
+            <button type="button" data-question="How long does delivery take?">Delivery time</button>
+            <button type="button" data-question="What is your freshness guarantee?">Freshness</button>
+            <button type="button" data-question="Can I talk to a person?">Talk to our team</button>
+        </div>
+        <form id="supportForm" class="support-form">
+            <label class="visually-hidden" for="supportInput">Type your question</label>
+            <input id="supportInput" name="question" type="text" maxlength="300" placeholder="Type a question..." autocomplete="off" required>
+            <button type="submit" aria-label="Send question">Send</button>
+        </form>
+        <a id="supportWhatsApp" class="support-whatsapp" href="https://wa.me/255679412400" target="_blank" rel="noopener noreferrer">Continue on WhatsApp</a>
+    </section>
+
+    <script>
+        const PRODUCTS_DATA = [
+            { id: 'p1', name: 'Pineapple', category: 'fruit', unit: '1 pc', img: 'images/Pine.PNG' },
+            { id: 'p2', name: 'Zucchini', category: 'produce', unit: '1kg Pack', img: 'images/Zuccini.PNG' },
+            { id: 'p3', name: 'Spices', category: 'pantry', unit: '500g Pack', img: 'images/Spices.PNG' },
+            { id: 'p4', name: 'Oranges', category: 'fruit', unit: '1kg Pack', img: 'images/Oranges.PNG' },
+            { id: 'p5', name: 'Okra', category: 'grains', unit: '1kg Bag', img: 'images/Okra.PNG' },
+            { id: 'p6', name: 'Fresh Red Tomatoes', category: 'produce', unit: '1kg Basket', img: 'images/tomatoes.jpg' },
+            { id: 'p7', name: 'Fresh Green Capsicum / Bell Pepper', category: 'produce', unit: '500g', img: 'images/Hoho.PNG' },
+            { id: 'p8', name: 'Ginger', category: 'produce', unit: '500g Pack', img: 'images/Ginger.PNG' },
+            { id: 'p9', name: 'Fresh Carrots', category: 'produce', unit: '1kg Bag', img: 'images/Carro.PNG' },
+            { id: 'p10', name: 'Fresh Cucumber', category: 'produce', unit: '1kg Pack', img: 'images/Cucumber.PNG' },
+            { id: 'p11', name: 'Fresh Green Beans', category: 'produce', unit: '1kg Pack', img: 'images/green beans.jpeg' },
+            { id: 'p13', name: 'Fresh Garlic', category: 'produce', unit: '500g Pack', img: 'images/CHINA.PNG' },
+            { id: 'p14', name: 'Fresh Mangoes', category: 'produce', unit: '1kg Bag', img: 'images/Mango.PNG' },
+            { id: 'p15', name: 'Fresh Potatoes', category: 'produce', unit: '1kg Bag', img: 'images/Irish.PNG' },
+            { id: 'p16', name: 'Fresh Lemons', category: 'produce', unit: '1kg Pack', img: 'images/lemons.jpeg' },
+            { id: 'p17', name: 'Fresh Bananas', category: 'fruit', unit: '1kg Bunch', img: 'images/Banana.PNG' },
+            { id: 'p19', name: 'Fresh Papaya / Pawpaw', category: 'fruit', unit: '1pc Medium Size', img: 'images/Pap.PNG' },
+            { id: 'p20', name: 'Fresh Watermelon', category: 'fruit', unit: '1pc Large Size', img: 'images/Melon.PNG' },
+            { id: 'p22', name: 'Fresh Avocado', category: 'fruit', unit: '1pc Medium Size', img: 'images/Avo.PNG' },
+            { id: 'p23', name: 'Fresh Passion Fruit', category: 'fruit', unit: '1kg Pack', img: 'images/Passion.PNG' },
+            { id: 'p24', name: 'Red Onions', category: 'fruit', unit: '1kg Pack', img: 'images/Red Onions.PNG' },
+            { id: 'p25', name: 'Letuce', category: 'fruit', unit: '1kg Pack', img: 'images/ucce.PNG' },
+            { id: 'p26', name: 'Yellow Pepper', category: 'fruit', unit: '1pc', img: 'images/ellow.jpeg' },
+            { id: 'p27', name: 'Red Pepper', category: 'produce', unit: '1pc', img: 'images/Redpep.jpeg' },
+            { id: 'p28', name: 'Fresh Apples', category: 'produce', unit: '1pc', img: 'images/Apples.PNG' },
+            { id: 'p29', name: 'Cauliflower', category: 'produce', unit: '1pc', img: 'images/Cauliflower.PNG' }
+
+        ];
+
+        let selectedProducts = new Set();
+
+        class SecurityLogger {
+            static log(level, context, details = {}) {
+                const logPayload = {
+                    timestamp: new Date().toISOString(),
+                    level: level.toUpperCase(),
+                    context: context,
+                    userAgent: navigator.userAgent,
+                    details: details
+                };
+
+                if (logPayload.details && logPayload.details.phone) {
+                    logPayload.details.phone = logPayload.details.phone.replace(/(\d{3})\d{4}(\d{3})/, '\$1****\$2');
+                }
+
+                console.log(`[${logPayload.timestamp}] [${logPayload.level}] [${context}]`, logPayload.details);
+            }
+
+            static error(context, errorObj, additionalInfo = {}) {
+                this.log('ERROR', context, {
+                    message: errorObj.message || String(errorObj),
+                    stack: errorObj.stack || null,
+                    ...additionalInfo
+                });
+            }
+
+            static warn(context, message, additionalInfo = {}) {
+                this.log('WARN', context, { message, ...additionalInfo });
+            }
+        }
+
+        class InputSanitizer {
+            static sanitizeString(input) {
+                if (typeof input !== 'string') return '';
+                return input
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#x27;')
+                    .replace(/\//g, '&#x2F;')
+                    .trim();
+            }
+
+            static validatePhone(phone) {
+                const phoneRegex = /^(?:\+255|255|0)[67]\d{8}\$/;
+                return phoneRegex.test(phone.replace(/\s+/g, ''));
+            }
+        }
+
+        function renderSkeletons(count = 6) {
+            const grid = document.getElementById('productGrid');
+            grid.innerHTML = '';
+            for (let i = 0; i < count; i++) {
+                const skeletonCard = document.createElement('div');
+                skeletonCard.className = 'product-card';
+                skeletonCard.innerHTML = `
+                    <div class="product-img skeleton"></div>
+                    <div class="product-info">
+                        <div class="skeleton-text skeleton"></div>
+                        <div class="skeleton-text short skeleton"></div>
+                        <div class="skeleton-btn skeleton"></div>
+                    </div>
+                `;
+                grid.appendChild(skeletonCard);
+            }
+        }
+
+        function renderProducts(categoryFilter = 'all') {
+            const grid = document.getElementById('productGrid');
+            grid.innerHTML = '';
+
+            try {
+                const filteredProducts = categoryFilter === 'all' 
+                    ? PRODUCTS_DATA 
+                    : PRODUCTS_DATA.filter(p => p.category === categoryFilter);
+
+                if (filteredProducts.length === 0) {
+                    grid.innerHTML = `<p style="grid-column: 1/-1; text-align: center; color: #666;">No products found in this category.</p>`;
+                    return;
+                }
+
+                filteredProducts.forEach(product => {
+                    const card = document.createElement('div');
+                    card.className = 'product-card';
+
+                    const isSelected = selectedProducts.has(product.id);
+
+                    card.innerHTML = `
+                        <img src="${product.img}" alt="${InputSanitizer.sanitizeString(product.name)}" class="product-img" loading="lazy" onerror="this.onerror=null;this.src='images/groceries.jpg';">
+                        <div class="product-info">
+                            <div class="product-title">${InputSanitizer.sanitizeString(product.name)}</div>
+                            <div class="product-unit">${InputSanitizer.sanitizeString(product.unit)}</div>
+                            <button type="button" class="select-btn ${isSelected ? 'selected' : ''}" data-id="${product.id}">
+                                ${isSelected ? '✓ Added' : '+ Add to Kikapu'}
+                            </button>
+                        </div>
+                    `;
+
+                    grid.appendChild(card);
+                });
+
+                document.querySelectorAll('.select-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const productId = this.getAttribute('data-id');
+                        toggleProductSelection(productId);
+                    });
+                });
+
+            } catch (err) {
+                SecurityLogger.error('RENDER_PRODUCTS_FAILURE', err, { categoryFilter });
+                grid.innerHTML = `<p style="grid-column: 1/-1; text-align: center; color: var(--error-color);">Failed to load products. Please refresh the page.</p>`;
+            }
+        }
+
+        function toggleProductSelection(id) {
+            if (selectedProducts.has(id)) {
+                selectedProducts.delete(id);
+                SecurityLogger.log('INFO', 'PRODUCT_REMOVED', { productId: id });
+            } else {
+                selectedProducts.add(id);
+                SecurityLogger.log('INFO', 'PRODUCT_SELECTED', { productId: id });
+            }
+            updateBasketUI();
+            
+            const activeCategory = document.querySelector('.filter-btn.active').getAttribute('data-category');
+            renderProducts(activeCategory);
+        }
+
+        function updateBasketUI() {
+            const basketElem = document.getElementById('selectedBasket');
+            if (selectedProducts.size === 0) {
+                basketElem.innerHTML = `<span style="color: #888;">No products selected yet. Click "+ Add to Kikapu" on any product above.</span>`;
+                return;
+            }
+
+            basketElem.innerHTML = '';
+            selectedProducts.forEach(id => {
+                const prod = PRODUCTS_DATA.find(p => p.id === id);
+                if (prod) {
+                    const badge = document.createElement('span');
+                    badge.className = 'badge';
+                    badge.innerHTML = `${InputSanitizer.sanitizeString(prod.name)} <span class="remove-item" onclick="toggleProductSelection('${prod.id}')">&times;</span>`;
+                    basketElem.appendChild(badge);
+                }
+            });
+        }
+
+        function answerSupportQuestion(question) {
+            const normalized = question.toLowerCase();
+
+            if (/order|buy|checkout|basket|kikapu/.test(normalized)) {
+                return 'Choose the items you need, add them to your Kikapu, then fill in your name, phone number, and delivery address in the order form. We’ll confirm your order by call or WhatsApp.';
+            }
+            if (/deliver|time|minutes|area|location/.test(normalized)) {
+                return 'We aim to deliver in 30 minutes or less. Delivery time can depend on your location and item availability. Message our team on WhatsApp and we’ll gladly confirm for your area.';
+            }
+            if (/fresh|quality|guarantee|produce/.test(normalized)) {
+                return 'Your groceries are selected fresh and carefully packed. If something is not satisfactory, our freshness guarantee means we’ll work with you to make it right.';
+            }
+            if (/payment|pay|price|cost/.test(normalized)) {
+                return 'I don’t have confirmed payment or current price details here, and I don’t want to guess. Our team can help with the latest information on WhatsApp.';
+            }
+            if (/person|human|team|agent|someone|whatsapp|talk/.test(normalized)) {
+                return 'Of course. Tap “Continue on WhatsApp” below and our team can help you personally.';
+            }
+
+            return 'I’m happy to help. I can answer questions about ordering, delivery, or freshness. For anything specific, tap “Continue on WhatsApp” and our team will take care of you.';
+        }
+
+        function initSupportAssistant() {
+            const toggle = document.getElementById('supportToggle');
+            const panel = document.getElementById('supportPanel');
+            const close = document.getElementById('supportClose');
+            const form = document.getElementById('supportForm');
+            const input = document.getElementById('supportInput');
+            const messages = document.getElementById('supportMessages');
+            const whatsapp = document.getElementById('supportWhatsApp');
+
+            if (!toggle || !panel || !close || !form || !input || !messages || !whatsapp) {
+                SecurityLogger.warn('SUPPORT_WIDGET_UNAVAILABLE', 'Support widget markup is incomplete');
+                return;
+            }
+
+            const appendMessage = (text, sender) => {
+                const message = document.createElement('p');
+                message.className = `support-message support-message-${sender}`;
+                message.textContent = text;
+                messages.appendChild(message);
+                messages.scrollTop = messages.scrollHeight;
+            };
+
+            const updateWhatsAppLink = (question) => {
+                const message = question
+                    ? `Hello KAPU BAABKUBWA, I need help with: ${question}`
+                    : 'Hello KAPU BAABKUBWA, I need help with my grocery order.';
+                whatsapp.href = `https://wa.me/255679412400?text=${encodeURIComponent(message)}`;
+            };
+
+            const askQuestion = (question) => {
+                const cleanedQuestion = question.trim();
+                if (!cleanedQuestion) return;
+                appendMessage(cleanedQuestion, 'customer');
+                appendMessage(answerSupportQuestion(cleanedQuestion), 'assistant');
+                updateWhatsAppLink(cleanedQuestion);
+            };
+
+            toggle.addEventListener('click', () => {
+                panel.hidden = false;
+                toggle.setAttribute('aria-expanded', 'true');
+                input.focus();
+            });
+
+            close.addEventListener('click', () => {
+                panel.hidden = true;
+                toggle.setAttribute('aria-expanded', 'false');
+                toggle.focus();
+            });
+
+            form.addEventListener('submit', (event) => {
+                event.preventDefault();
+                askQuestion(input.value);
+                input.value = '';
+            });
+
+            document.querySelectorAll('.support-quick-actions [data-question]').forEach((button) => {
+                button.addEventListener('click', () => askQuestion(button.dataset.question || ''));
+            });
+
+            whatsapp.addEventListener('click', () => {
+                SecurityLogger.log('INFO', 'SUPPORT_WHATSAPP_HANDOFF', { hasPrefilledMessage: true });
+            });
+
+            updateWhatsAppLink('');
+        }
+
+        function initApp() {
+            renderSkeletons(8);
+            setTimeout(() => {
+                renderProducts('all');
+            }, 1000);
+        }
+
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                
+                const category = this.getAttribute('data-category');
+                renderSkeletons(4);
+                setTimeout(() => {
+                    renderProducts(category);
+                }, 400);
+            });
+        });
+
+        window.addEventListener('error', function(e) {
+            SecurityLogger.error('GLOBAL_UNHANDLED_ERROR', e.error || e.message, { filename: e.filename, lineno: e.lineno });
+        });
+
+        window.addEventListener('unhandledrejection', function(e) {
+            SecurityLogger.error('UNHANDLED_PROMISE_REJECTION', e.reason);
+        });
+
+        document.getElementById('orderForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const feedbackElem = document.getElementById('feedback-message');
+            feedbackElem.style.display = 'none';
+
+            try {
+                const name = document.getElementById('fullName').value;
+                const phone = document.getElementById('phone').value;
+                const address = document.getElementById('address').value;
+
+                if (selectedProducts.size === 0) {
+                    SecurityLogger.warn('VALIDATION_FAILURE', 'Order attempted without product selection');
+                    feedbackElem.className = 'msg-error';
+                    feedbackElem.textContent = 'Please select at least one product to add to your Kikapu before ordering.';
+                    feedbackElem.style.display = 'block';
+                    return;
+                }
+
+                if (!name || !phone || !address) {
+                    SecurityLogger.warn('VALIDATION_FAILURE', 'Missing contact/delivery details');
+                    feedbackElem.className = 'msg-error';
+                    feedbackElem.textContent = 'Please fill out all contact and delivery details.';
+                    feedbackElem.style.display = 'block';
+                    return;
+                }
+
+                if (!InputSanitizer.validatePhone(phone)) {
+                    SecurityLogger.warn('VALIDATION_FAILURE', 'Invalid phone number format');
+                    feedbackElem.className = 'msg-error';
+                    feedbackElem.textContent = 'Please enter a valid Tanzanian phone number (e.g., 0679412400).';
+                    feedbackElem.style.display = 'block';
+                    return;
+                }
+
+                const payload = {
+                    fullName: InputSanitizer.sanitizeString(name),
+                    phone: InputSanitizer.sanitizeString(phone),
+                    address: InputSanitizer.sanitizeString(address),
+                    selectedItemIds: Array.from(selectedProducts)
+                };
+
+                SecurityLogger.log('INFO', 'ORDER_SUBMITTED_SUCCESS', payload);
+
+                feedbackElem.className = 'msg-success';
+                feedbackElem.textContent = `Order successfully received with ${selectedProducts.size} item(s)! We will confirm via Call/WhatsApp (0679 412 400) shortly.`;
+                feedbackElem.style.display = 'block';
+
+                selectedProducts.clear();
+                updateBasketUI();
+                renderProducts(document.querySelector('.filter-btn.active').getAttribute('data-category'));
+                this.reset();
+
+            } catch (err) {
+                SecurityLogger.error('FORM_SUBMIT_EXCEPTION', err);
+                feedbackElem.className = 'msg-error';
+                feedbackElem.textContent = 'An unexpected error occurred. Please place your order directly by calling 0679 412 400.';
+                feedbackElem.style.display = 'block';
+            }
+        });
+
+        initApp();
+        initSupportAssistant();
+    </script>
+</body>
+</html>
